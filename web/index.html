@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Base Path -->
+    <base href="/">
+
+    <!-- Metadata -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aplicación de gestión educativa con Flutter">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- App Title -->
+    <title>Gestión Educativa</title>
+
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+  </head>
+  <body>
+    <!-- Flutter App -->
+    <script src="flutter_bootstrap.js" async></script>
+
+    <!-- Firebase Config -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js";
+      import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore.js";
+
+      // Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyDPzmwLdVkbtQOpnjXEOPLZl4GAlK8rIlA",
+        authDomain: "lalista-b7eef.firebaseapp.com",
+        projectId: "lalista-b7eef",
+        storageBucket: "lalista-b7eef.firebasestorage.app",
+        messagingSenderId: "5461663012",
+        appId: "1:5461663012:web:58cbbdbeb732604d6da7b1"
+      };
+
+      // Inicializar Firebase
+      const app = initializeApp(firebaseConfig);
+
+      // Inicializar Firestore
+      const db = getFirestore(app);
+
+      // Prueba de Firestore
+      async function testFirestore() {
+        try {
+          const testDocRef = doc(db, "testCollection", "testDoc");
+          await setDoc(testDocRef, { message: "¡Firestore está funcionando!" });
+
+          const testDocSnap = await getDoc(testDocRef);
+          console.log("Documento de prueba Firestore:", testDocSnap.data());
+        } catch (error) {
+          console.error("Error al probar Firestore:", error);
+        }
+      }
+
+      // Ejecutar prueba
+      testFirestore();
+    </script>
+  </body>
+</html>

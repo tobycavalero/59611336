@@ -1,0 +1,53 @@
+name: inscribe
+description: Proyecto de gestión de estudiantes con Flutter.
+
+publish_to: 'none' # Remove this line if you want to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.17.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^3.10.0
+  cloud_firestore: ^5.5.0
+  firebase_auth: ^5.4.0
+  firebase_storage: ^12.3.6
+  hive: ^2.2.3 
+  hive_flutter: ^1.1.0
+  provider: ^6.0.5
+  http: ^0.13.6
+  shared_preferences: ^2.1.1
+  fl_chart: ^0.69.0
+  sqflite_common_ffi: ^2.3.4
+  intl: ^0.18.0
+  syncfusion_flutter_pdf: ^20.3.55
+  file_saver: ^0.2.14
+  flutter_email_sender: ^5.0.2
+  printing: ^5.6.0
+  path_provider: ^2.0.11
+  image_picker: ^0.8.4+4
+  file_picker: ^5.2.1
+  universal_io: ^2.0.4
+  google_place: ^0.4.7
+  open_file: ^3.2.1
+  universal_html: ^2.0.7
+  flutter_pdfview: ^1.0.4+1
+  google_fonts: ^4.0.4
+  cached_network_image: ^3.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  hive_generator: ^2.0.0 
+  build_runner: ^2.3.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/default_avatar.png

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5461663012",
+    "project_id": "lalista-b7eef",
+    "storage_bucket": "lalista-b7eef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5461663012:android:10447aa149cbb4946da7b1",
+        "android_client_info": {
+          "package_name": "com.example.inscribe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqnobnOBxkQunSw_11awHBUse5K9ioPPQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
