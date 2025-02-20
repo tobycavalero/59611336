@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "lalista-b7eef"
-  }
+  },
+  "targets": {
+    "lalista-b7eef": {
+      "hosting": {
+        "my-app": [
+          "my-project-id"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
