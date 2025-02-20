@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'course_form.dart';
 
 class CoursesScreen extends StatefulWidget {
-  const CoursesScreen({super.key});
+  const CoursesScreen({Key? key}) : super(key: key);
 
   @override
   _CoursesScreenState createState() => _CoursesScreenState();
@@ -13,7 +12,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
   List<Map<String, dynamic>> _courses = [];
   bool _isLoading = false;
   String _searchQuery = '';
-  bool _isSortedAscending = true;
 
   @override
   void initState() {
@@ -37,34 +35,27 @@ class _CoursesScreenState extends State<CoursesScreen> {
     }
   }
 
-  void _deleteCourse(String courseId) {
-    showDialog(
+  Future<void> _deleteCourse(String courseId) async {
+    bool confirm = await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: const Text('¿Estás seguro de que deseas eliminar este curso?'),
+        title: Text("Confirmar eliminación"),
+        content: Text("¿Seguro que deseas eliminar este curso?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          TextButton(
-            onPressed: () async {
-              await FirebaseFirestore.instance.collection('courses').doc(courseId).delete();
-              Navigator.pop(context);
-              _loadCourses();
-            },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("Cancelar")),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Eliminar", style: TextStyle(color: Colors.red))),
         ],
       ),
     );
-  }
 
-  void _toggleSortOrder() {
-    setState(() {
-      _isSortedAscending = !_isSortedAscending;
-      _courses.sort((a, b) => _isSortedAscending
-          ? a['name'].compareTo(b['name'])
-          : b['name'].compareTo(a['name']));
-    });
+    if (!confirm) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('courses').doc(courseId).delete();
+      _loadCourses();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error eliminando: $e')));
+    }
   }
 
   void _showCourseDetails(Map<String, dynamic> course) {
@@ -75,14 +66,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Descripción: ${course['description']}'),
-            Text('Máximo de estudiantes: ${course['maxStudents']}'),
-            Text('Asignado a: ${course['teacherId'] ?? 'No asignado'}'),
+            Text("Descripción: ${course['description']}"),
+            Text("Maestro: ${course['teacherId']}"),
+            Text("Máx. Estudiantes: ${course['maxStudents']}"),
+            Text("Estudiantes inscritos: ${course['students'].length}"),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text("Cerrar"))],
       ),
     );
   }
@@ -98,71 +88,119 @@ class _CoursesScreenState extends State<CoursesScreen> {
         title: const Text('Lista de Cursos'),
         backgroundColor: Colors.orange,
         actions: [
-          IconButton(icon: const Icon(Icons.sort), onPressed: _toggleSortOrder),
-          IconButton(icon: const Icon(Icons.home), onPressed: () => Navigator.pushNamed(context, '/home')),
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CourseSearchDelegate(_courses, _showCourseDetails),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.sort),
+            onPressed: () {
+              setState(() {
+                _courses.sort((a, b) => a['name'].compareTo(b['name']));
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: () => Navigator.pushNamed(context, '/home'),
+          ),
         ],
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : filteredCourses.isEmpty
+              ? const Center(child: Text("No hay cursos disponibles"))
+              : ListView.builder(
+                  itemCount: filteredCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = filteredCourses[index];
+                    return ListTile(
+                      title: Text(course['name']),
+                      subtitle: Text(course['description'] ?? 'Sin descripción'),
+                      onTap: () => _showCourseDetails(course),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/courseForm', arguments: course).then((_) => _loadCourses());
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteCourse(course['id']),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         child: const Icon(Icons.add),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CourseForm()),
-          ).then((_) => _loadCourses());
+          Navigator.pushNamed(context, '/courseForm').then((_) => _loadCourses());
         },
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                labelText: 'Buscar curso',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) => setState(() => _searchQuery = value),
-            ),
-          ),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredCourses.length,
-                    itemBuilder: (context, index) {
-                      final course = filteredCourses[index];
-                      return Card(
-                        color: Colors.orange.shade100,
-                        child: ListTile(
-                          title: Text(course['name']),
-                          subtitle: Text(course['description'] ?? 'Sin descripción'),
-                          onTap: () => _showCourseDetails(course),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => CourseForm(course: course)),
-                                  ).then((_) => _loadCourses());
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deleteCourse(course['id']),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-        ],
+    );
+  }
+}
+
+class CourseSearchDelegate extends SearchDelegate {
+  final List<Map<String, dynamic>> courses;
+  final Function(Map<String, dynamic>) onSelect;
+
+  CourseSearchDelegate(this.courses, this.onSelect);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () => query = '',
       ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () => close(context, null),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return _buildCourseList();
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    return _buildCourseList();
+  }
+
+  Widget _buildCourseList() {
+    List<Map<String, dynamic>> filtered = courses.where((course) => course['name'].toLowerCase().contains(query.toLowerCase())).toList();
+
+    if (filtered.isEmpty) return Center(child: Text("No hay resultados"));
+
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, index) {
+        final course = filtered[index];
+        return ListTile(
+          title: Text(course['name']),
+          subtitle: Text(course['description'] ?? 'Sin descripción'),
+          onTap: () => onSelect(course),
+        );
+      },
     );
   }
 }
