@@ -7,6 +7,12 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017"
+    {
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  }
+}
   },
   "compileOnSave": true,
   "include": [
